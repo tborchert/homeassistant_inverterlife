@@ -39,25 +39,9 @@ except ImportError:  # pragma: no cover - fallback for dev machines
         return AES.new(key, AES.MODE_GCM, nonce=nonce).decrypt_and_verify(data[:-16], data[-16:])
 
 
-# --- App keys (extracted from the APK; kept out of the repo) ------------------------------
-# Loaded from app_keys.json next to the project root (git-ignored), or from the path in
-# $INVERTERLIFE_KEYS. See app_keys.example.json and FINDINGS.md for how to extract them.
-KEY_FIELDS = ("app_key", "app_secret", "bmp_key", "cert_sha256")
-
-
-def load_app_keys(path: str | None = None) -> dict:
-    path = path or os.environ.get("INVERTERLIFE_KEYS") or os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app_keys.json")
-    try:
-        with open(path) as f:
-            keys = json.load(f)
-    except FileNotFoundError:
-        raise RuntimeError(f"App keys file not found: {path} (see app_keys.example.json)") from None
-    missing = [k for k in KEY_FIELDS if not keys.get(k)]
-    if missing:
-        raise RuntimeError(f"{path} is missing: {', '.join(missing)}")
-    return keys
-
+# --- App keys --------------------------------------------------------------------------------
+# Extracted from the APK. The repo ships them encrypted (app_keys.enc.json); see app_keys.py.
+from .app_keys import BadPassphrase, load_app_keys  # noqa: E402,F401
 
 TTID = "smarterpool"
 APP_VERSION = "1.1.6"
@@ -148,8 +132,9 @@ def _rsa_encrypt_pkcs1(modulus: int, exponent: int, data: bytes) -> str:
 
 class InverterLifeClient:
     def __init__(self, region: str = "EU", country_code: str = "49", lang: str = "en",
-                 device_id: str | None = None, keys: dict | None = None):
-        self.keys = keys or load_app_keys()
+                 device_id: str | None = None, keys: dict | None = None,
+                 passphrase: str | None = None):
+        self.keys = keys or load_app_keys(passphrase)
         self._hmac_key = hmac_key(self.keys)
         self.url = REGION_HOSTS[region]
         self.country_code = country_code

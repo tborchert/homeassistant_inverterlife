@@ -11,9 +11,20 @@ InverterLife-specific backend.
 
 ## App keys
 
-The four values the client needs are kept out of this repo. They go in a local, git-ignored
-`app_keys.json` (format: `app_keys.example.json`). To extract them from the APK
-(`base.apk`, InverterLife 1.1.6):
+The four values the client needs are never committed in plain text.
+
+- **Repo:** `app_keys.enc.json`, encrypted with AES-256-GCM using a key derived from a passphrase
+  with scrypt (N=2^15, r=8). The integration asks the user for the passphrase:
+  `InverterLifeClient(passphrase=...)`. A wrong passphrase raises `BadPassphrase`.
+- **Development:** a plain, git-ignored `app_keys.json` (format: `app_keys.example.json`) takes
+  precedence when it exists.
+- **Create or update the encrypted file:** `python3 tools/encrypt_app_keys.py`, which prompts for
+  the passphrase.
+
+This keeps the keys away from secret scanners and casual readers. Anyone who has the passphrase
+can recover them.
+
+To extract the keys from the APK (`base.apk`, InverterLife 1.1.6):
 
 | Field | How to get it |
 |---|---|
