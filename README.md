@@ -1,2 +1,2 @@
 # homeassistant_inverterlife
-Home Assistant plugin for monitoring inverters that use the Inverter Life Tuya app
+Home Assistant plugin for monitoring inverter heat pumps that use the Inverter Life Tuya app
