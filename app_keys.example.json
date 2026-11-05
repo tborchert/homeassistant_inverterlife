@@ -1,0 +1,6 @@
+{
+  "app_key": "<THING_SMART_APPKEY from the APK>",
+  "app_secret": "<THING_SMART_SECRET from the APK>",
+  "bmp_key": "<output of tools/extract_bmp_key.py>",
+  "cert_sha256": "<AA:BB:...: SHA-256 of the APK signing cert, uppercase with colons>"
+}

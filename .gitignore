@@ -218,3 +218,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Vendor app binaries (too large for GitHub, and not ours to redistribute)
+*.apk
+*.apks
+*.apkm
+*.xapk
+
+# Local credentials for testing
+app_keys.json
+credentials*.json
+secrets*.json
+
+# macOS
+.DS_Store
