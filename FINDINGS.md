@@ -103,6 +103,31 @@ Sources: github.com/nalajcie/tuya-sign-hacking, gist.github.com/bahorn/9bebbbf37
 - **Not yet tested against the live server.** Unconfirmed: the native HMAC key format, the AES key
   derivation without `ecode` (pre-login), and whether `chKey` (computed natively) is required.
 
+## API endpoint / data center
+
+The app does **not** hardcode a single host. `assets/thing_domains_v1/regions` (AES-256-CTR;
+32-byte key prepended, then 16-byte IV, base64-wrapped) decrypts to a per-region domain list:
+
+| region | mobileApiUrl |
+|---|---|
+| EU (default) | `https://a1.tuyaeu.com` |
+| AZ (W. America) | `https://a1-us.iotbing.com` |
+| IN | `https://a1-in.iotbing.com` |
+| RU | `https://a1.iot334.com` |
+
+`tools/extract_regions.py` reproduces this. There is no `t_cdc.tcfg` in the APK, so these baked-in
+values are authoritative and the BuildConfig appKey is used as-is.
+
+This OEM ("smarterpool" ttid) runs on Tuya's **iotbing**/**iot334** OEM clouds. The EU entry is
+just Tuya's generic default, so an EU OEM account likely lives on `a1-eu.iotbing.com`, not
+`a1.tuyaeu.com`. That matches the live error: `thing.m.country.list` on `a1.tuyaeu.com` returns
+`ILLEGAL_CLIENT_ID / Invalid client; No access` — the appKey isn't on that cluster.
+
+**Next:** `python3 tools/probe_hosts.py` sends the no-login country list to each candidate host.
+The host that returns anything other than `ILLEGAL_CLIENT_ID` is the right cluster; set it with
+`InverterLifeClient(host=...)`. The authoritative routing is the `*.iot-dns.com` discovery service
+(`h2-eu.iot-dns.com`), which can be implemented later if the static hosts don't resolve it.
+
 ## Options for Home Assistant
 
 1. **Local control (likely best):** the dongle is a Tuya device, so `tuya-local` (HACS) or

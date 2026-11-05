@@ -46,11 +46,16 @@ from .app_keys import BadPassphrase, load_app_keys  # noqa: E402,F401
 TTID = "smarterpool"
 APP_VERSION = "1.1.6"
 
+# mobileApiUrl per region, decrypted from assets/thing_domains_v1/regions in the APK.
+# This OEM runs on Tuya's "iotbing"/"iot334" OEM clouds; only the EU default is the generic
+# a1.tuyaeu.com. a1-eu.iotbing.com is not in the asset but is the likely EU OEM host (mirrors
+# a1-us / a1-in); the probe tool (tools/probe_hosts.py) confirms which cluster the appKey is on.
 REGION_HOSTS = {
     "EU": "https://a1.tuyaeu.com/api.json",
-    "US": "https://a1.tuyaus.com/api.json",
-    "IN": "https://a1.tuyain.com/api.json",
-    "CN": "https://a1.tuyacn.com/api.json",
+    "EU_OEM": "https://a1-eu.iotbing.com/api.json",
+    "AZ": "https://a1-us.iotbing.com/api.json",   # Western America / Azure
+    "IN": "https://a1-in.iotbing.com/api.json",
+    "RU": "https://a1.iot334.com/api.json",
 }
 
 # Only these may be sent. Login actions are included because they're needed to read anything.
@@ -133,10 +138,15 @@ def _rsa_encrypt_pkcs1(modulus: int, exponent: int, data: bytes) -> str:
 class InverterLifeClient:
     def __init__(self, region: str = "EU", country_code: str = "49", lang: str = "en",
                  device_id: str | None = None, keys: dict | None = None,
-                 passphrase: str | None = None):
+                 passphrase: str | None = None, host: str | None = None):
         self.keys = keys or load_app_keys(passphrase)
         self._hmac_key = hmac_key(self.keys)
-        self.url = REGION_HOSTS[region]
+        # `host` overrides the region (full URL, or a bare hostname). Use probe_hosts.py to
+        # find the cluster this appKey lives on if the default region is rejected.
+        if host:
+            self.url = host if host.endswith("/api.json") else f"https://{host.replace('https://', '')}/api.json"
+        else:
+            self.url = REGION_HOSTS[region]
         self.country_code = country_code
         self.lang = lang
         self.device_id = device_id or secrets.token_hex(22)
