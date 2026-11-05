@@ -230,5 +230,9 @@ app_keys.json
 credentials*.json
 secrets*.json
 
+# Frida captures may contain session tokens
+frida_capture.log
+*.capture.log
+
 # macOS
 .DS_Store

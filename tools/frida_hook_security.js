@@ -61,5 +61,23 @@ Java.perform(function () {
     return r;
   };
 
+  // Full parameter map, captured just before signing. Shows chKey, the exact key=value set,
+  // the encrypted postData, time, requestId, etc. — i.e. the whole wire request.
+  try {
+    var Sign = Java.use('com.thingclips.sdk.network.ThingApiSignManager');
+    Sign.generateSignatureSdk.overload('java.util.Map').implementation = function (map) {
+      var out = '\n[request params]';
+      var it = map.keySet().iterator();
+      while (it.hasNext()) {
+        var k = it.next();
+        out += '\n  ' + k + ' = ' + map.get(k);
+      }
+      console.log(out);
+      return this.generateSignatureSdk(map);
+    };
+  } catch (e) {
+    console.log('[!] could not hook ThingApiSignManager: ' + e);
+  }
+
   console.log('[*] SecureNativeApi hooks installed.');
 });
