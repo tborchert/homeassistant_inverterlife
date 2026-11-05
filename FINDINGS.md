@@ -90,6 +90,40 @@ Sources: github.com/nalajcie/tuya-sign-hacking, gist.github.com/bahorn/9bebbbf37
 - Login: password-login with an RSA-encrypted MD5(password), using a key from a prior token call.
   `ecode` and `sid` come from the login response.
 
+## Native wall (current blocker)
+
+`tools/probe_hosts.py` returns `ILLEGAL_CLIENT_ID` on **every** cluster (tuyaeu, all iotbing, iot334).
+The appKey isn't rejected for the region — it isn't accepted anywhere — so the request is missing
+something the server uses to identify the client. The likely cause is `chKey`, a channel key the
+real app attaches to every request, which this client doesn't send.
+
+Four things are computed in `libthing_security.so` and cannot be reproduced from static analysis:
+
+| native (SecureNativeApi) | used for | client currently |
+|---|---|---|
+| `getChKey(ctx, appKey)` | per-request `chKey` client id | **omitted** — probable cause of ILLEGAL_CLIENT_ID |
+| `computeDigest(signStr, ?)` | request `sign` | guessed HMAC key format from a public gist; unverified |
+| `getEncryptoKey(reqId, ecode)` | per-request AES key | guessed HMAC→hex[:16] from the gist; unverified |
+| `decryptResponseData` | response decrypt | guessed (same key); unverified |
+
+The app also pins TLS (`assets/thing_domains_v1/pins`, `h2.ca.der`), so a plain proxy can't read
+traffic.
+
+### Plan: capture the real values with Frida
+
+`tools/frida_hook_security.js` hooks the Java wrappers of those native calls and logs their inputs
+and outputs. On a rooted device or emulator with frida-server:
+
+```
+frida -U -f com.InverterLife -l tools/frida_hook_security.js
+```
+
+Log in and open the inverter in the app, then read off: the real `chKey`, the exact `signString`
+that `computeDigest` receives (confirms the sign param list/order/key), and real
+`requestId → AES key` pairs (confirms `getEncryptoKey`). Those let us correct the client. If `chKey`
+turns out device-specific, the cloud reimplementation may not be portable and local/Smart-Life
+re-pairing (see below) becomes the better route.
+
 ## Client status
 
 - `tools/extract_bmp_key.py` decodes the BMP key (a 32-character string like the app secret).
