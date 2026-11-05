@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "kdf": "scrypt",
+  "n": 32768,
+  "r": 8,
+  "p": 1,
+  "salt": "1Sgg6ylHrefoGZ9aUPkdWg==",
+  "nonce": "mOV8aZZyPhQtf29f",
+  "ct": "sQqK79Iyw8Iq4AgGlsryh2OTIJ6TazjHBgEVWGaxgI4dh9151XSpaJfXojrjZGjcbaZxuyv522m0I69h3kP41zoi5WUUDS1tcFWh1ZEnZSmqwdeuf0DLRFYn0TEJLA7xFQjmtngDqg88h0Ld3DAUu9zK0K1uLh10wHcLmMVkv/g+UNAprjAsEkW26d1FYUke+ikmxEzQDBqW903u3o/th2oX22KWvv9hGbP4zkfOMQgHcHWfPFW17KgkeiCOXYRFZ8ittiMdR42vBQwmB3s6UkM3wYU5YeURYxVhdj6i1Smm5fAlpi2IOBZ8rjphCyMap2h7E4OEY5+vF0botIB/dp4FHvDqZQ=="
+}
