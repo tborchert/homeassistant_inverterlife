@@ -1,5 +1,11 @@
 # InverterLife app — API / auth findings
 
+> **Recommended route is local Modbus, not this cloud API — see [MODBUS.md](MODBUS.md).**
+> The device is a Fairland AquaX 20 (FAI-150-0017) pool heat pump whose Tuya Wi-Fi module is an
+> RS485-Modbus bridge. The cloud clone below stalled on native crypto (`chKey`/sign/AES in
+> `libthing_security.so`); reading the RS485 bus directly is local and avoids all of it.
+
+
 App: `com.InverterLife` v1.1.6 (base.apk + split_config.arm64_v8a.apk)
 
 ## Summary
